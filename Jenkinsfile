@@ -3,6 +3,7 @@ pipeline {
     environment {
         //be sure to replace "bhavukm" with your own Docker Hub username
         DOCKER_IMAGE_NAME = "ggsdocks/train-schedule"
+        JAVA_HOME = '/usr/lib/jvm/java-8-openjdk-amd64'
     }
     stages {
         stage('Build') {
