@@ -50,8 +50,8 @@ pipeline {
             }
             steps {           
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
-                sh '''sed /CANARY_REPLICAS/$CANARY_REPLICAS train-schedule-kube-canary.yml
-                kubectl apply -f train-schedule-kube-canary.yml'''
+                sh '''sed -i \'s/CANARY_REPLICAS/$CANARY_REPLICAS/g\' train-schedule-kube-canary.yml
+                    kubectl apply -f train-schedule-kube-canary.yml'''
                 }
             }
         }
@@ -66,7 +66,8 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
-                sh '''kubectl apply -f train-schedule-kube-canary.yml
+                sh '''sed -i \'s/CANARY_REPLICAS/$CANARY_REPLICAS/g\' train-schedule-kube-canary.yml
+                    kubectl apply -f train-schedule-kube-canary.yml
                     kubectl apply -f train-schedule-kube.yml'''
                 }
             }
