@@ -7,7 +7,6 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                tool name: 'jdk_1.8.0_352', type: 'jdk'
                 echo 'Running build automation'
                 sh './gradlew build --no-daemon'
                 archiveArtifacts artifacts: 'dist/trainSchedule.zip'
