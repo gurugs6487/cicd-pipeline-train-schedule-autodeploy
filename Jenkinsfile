@@ -14,7 +14,7 @@ pipeline {
         }
         stage('Print Branch Name') {
             steps {
-                echo $BRANCH_NAME
+                sh 'echo $BRANCH_NAME'
             }
         }
         stage('Build Docker Image') {
