@@ -48,9 +48,10 @@ pipeline {
             environment { 
                 CANARY_REPLICAS = 1
             }
-            steps {                
+            steps {           
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
-                sh 'kubectl apply -f train-schedule-kube-canary.yml'
+                sh '''sed /CANARY_REPLICAS/$CANARY_REPLICAS train-schedule-kube-canary.yml
+                kubectl apply -f train-schedule-kube-canary.yml'''
                 }
             }
         }
