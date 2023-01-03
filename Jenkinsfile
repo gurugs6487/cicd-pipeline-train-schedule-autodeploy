@@ -49,7 +49,7 @@ pipeline {
                 CANARY_REPLICAS = 1
             }
             steps {
-                sh 'kubectl apply -f train-schedule-kube-canary.yml'
+                sh 'kubectl apply -f train-schedule-kube-canary.yml --context kubernetes-admin@kubernetes'
             }
         }
         stage('DeployToProduction') {
@@ -62,8 +62,8 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                sh '''kubectl apply -f train-schedule-kube-canary.yml
-                    kubectl apply -f train-schedule-kube.yml'''
+                sh '''kubectl apply -f train-schedule-kube-canary.yml --context kubernetes-admin@kubernetes
+                    kubectl apply -f train-schedule-kube.yml --context kubernetes-admin@kubernetes'''
             }
         }
     }
