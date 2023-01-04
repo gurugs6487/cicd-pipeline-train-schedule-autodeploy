@@ -71,7 +71,9 @@ pipeline {
                 milestone(1)
                 sh """sed -i 's|DOCKER_IMAGE_NAME|"${env.DOCKER_IMAGE_NAME}"|g' train-schedule-kube.yml"""
                 sh """sed -i 's|BUILD_NUMBER|"${env.BUILD_NUMBER}"|g' train-schedule-kube.yml"""
+                sh "cat train-schedule-kube.yml"
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
+                sh 'DEPLOYMENT_NAME=$(kubectl get deployments | grep canary | awk \'{print $1}\')'
                 sh "kubectl scale --replicas=${env.CANARY_REPLICAS} deployment/$DEPLOYMENT_NAME"
                 sh "kubectl apply -f train-schedule-kube.yml"
                 }
