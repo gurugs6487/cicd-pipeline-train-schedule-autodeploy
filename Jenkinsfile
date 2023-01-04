@@ -51,6 +51,7 @@ pipeline {
             steps {           
                 sh """sed -i 's|DOCKER_IMAGE_NAME|"${env.DOCKER_IMAGE_NAME}"|g' train-schedule-kube-canary.yml"""
                 sh """sed -i 's|BUILD_NUMBER|"${env.BUILD_NUMBER}"|g' train-schedule-kube-canary.yml"""
+                sh "cat train-schedule-kube-canary.yml"
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
                 sh "kubectl apply -f train-schedule-kube-canary.yml"
                 sh 'DEPLOYMENT_NAME=$(kubectl get deployments | grep canary | awk \'{print $1}\')'
