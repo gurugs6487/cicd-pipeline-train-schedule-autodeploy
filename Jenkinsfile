@@ -49,14 +49,14 @@ pipeline {
                 CANARY_REPLICAS = 1
             }
             steps {           
-                sh """sed -i 's|DOCKER_IMAGE_NAME|${env.DOCKER_IMAGE_NAME}|g' train-schedule-kube-canary.yml"""
-                sh """sed -i 's|BUILD_NUMBER|${env.BUILD_NUMBER}|g' train-schedule-kube-canary.yml"""
-                //sh "cat train-schedule-kube-canary.yml"
+                sh 'cp train-schedule-kube-canary.yml train-schedule-kube-canary-temp.yml'
+                sh """sed -i 's|DOCKER_IMAGE_NAME|${env.DOCKER_IMAGE_NAME}|g' train-schedule-kube-canary-temp.yml"""
+                sh """sed -i 's|BUILD_NUMBER|${env.BUILD_NUMBER}|g' train-schedule-kube-canary-temp.yml"""
+                sh """sed -i 's|CANARY_REPLICAS|${env.CANARY_REPLICAS}|g' train-schedule-kube-canary-temp.yml"""
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
-                sh "kubectl apply -f train-schedule-kube-canary.yml"
-                sh 'DEPLOYMENT_NAME=$(kubectl get deployments | grep canary | awk \'{print $1}\')'
-                sh "kubectl scale --replicas=${env.CANARY_REPLICAS} ${DEPLOYMENT_NAME}"
+                    sh "kubectl apply -f train-schedule-kube-canary-temp.yml"
                 }
+                sh 'rm train-schedule-kube-canary-temp.yml'
             }
         }
         stage('DeployToProduction') {
@@ -69,14 +69,19 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                sh """sed -i 's|DOCKER_IMAGE_NAME|${env.DOCKER_IMAGE_NAME}|g' train-schedule-kube.yml"""
-                sh """sed -i 's|BUILD_NUMBER|${env.BUILD_NUMBER}|g' train-schedule-kube.yml"""
-                sh "cat train-schedule-kube.yml"
+                sh 'cp train-schedule-kube-canary.yml train-schedule-kube-canary-temp.yml'
+                sh """sed -i 's|DOCKER_IMAGE_NAME|${env.DOCKER_IMAGE_NAME}|g' train-schedule-kube-canary-temp.yml"""
+                sh """sed -i 's|BUILD_NUMBER|${env.BUILD_NUMBER}|g' train-schedule-kube-canary-temp.yml"""
+                sh """sed -i 's|CANARY_REPLICAS|${env.CANARY_REPLICAS}|g' train-schedule-kube-canary-temp.yml"""
+                sh 'cp train-schedule-kube.yml train-schedule-kube-temp.yml'
+                sh """sed -i 's|DOCKER_IMAGE_NAME|${env.DOCKER_IMAGE_NAME}|g' train-schedule-kube-temp.yml"""
+                sh """sed -i 's|BUILD_NUMBER|${env.BUILD_NUMBER}|g' train-schedule-kube-temp.yml"""
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
-                sh 'DEPLOYMENT_NAME=$(kubectl get deployments | grep canary | awk \'{print $1}\')'
-                sh "kubectl scale --replicas=${env.CANARY_REPLICAS} ${DEPLOYMENT_NAME}"
-                sh "kubectl apply -f train-schedule-kube.yml"
+                    sh "kubectl apply -f train-schedule-kube-canary-temp.yml --validate=false"
+                    sh "kubectl apply -f train-schedule-kube-temp.yml --validate=false"
                 }
+                sh 'rm train-schedule-kube-canary-temp.yml'
+                sh 'rm train-schedule-kube-temp.yml'
             }
         }
     }
