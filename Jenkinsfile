@@ -50,7 +50,8 @@ pipeline {
             }
             steps {           
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
-                sh '''kubectl scale --replicas=${env.CANARY_REPLICAS} -f train-schedule-kube-canary.yml'''
+                sh '''kubectl scale --replicas="${env.CANARY_REPLICAS}" -f train-schedule-kube-canary.yml
+                   '''
                 }
             }
         }
@@ -65,8 +66,9 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
-                sh '''kubectl scale --replicas=${env.CANARY_REPLICAS} -f train-schedule-kube-canary.yml
-                    kubectl apply -f train-schedule-kube.yml'''
+                sh '''kubectl scale --replicas="${env.CANARY_REPLICAS}" -f train-schedule-kube-canary.yml
+                    kubectl apply -f train-schedule-kube.yml
+                    '''
                 }
             }
         }
