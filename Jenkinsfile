@@ -69,6 +69,9 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
+                script {
+                    env.SERVICE = input message: "Please enter the Canary Service to be deleted", parameters: [string(defaultValue: '', description: '', name: 'ServiceName')]
+                }
                 sh 'cp train-schedule-kube-canary.yml train-schedule-kube-canary-temp.yml'
                 sh """sed -i 's|DOCKER_IMAGE_NAME|${env.DOCKER_IMAGE_NAME}|g' train-schedule-kube-canary-temp.yml"""
                 sh """sed -i 's|BUILD_NUMBER|${env.BUILD_NUMBER}|g' train-schedule-kube-canary-temp.yml"""
@@ -78,6 +81,7 @@ pipeline {
                 sh """sed -i 's|BUILD_NUMBER|${env.BUILD_NUMBER}|g' train-schedule-kube-temp.yml"""
                 withKubeConfig(credentialsId: 'kubernetes_auth', namespace: '', serverUrl: 'https://172.31.6.117:6443') {
                     sh "kubectl apply -f train-schedule-kube-canary-temp.yml --validate=false"
+                    sh "kubectl delete service ${env.SERVICE}"
                     sh "kubectl apply -f train-schedule-kube-temp.yml --validate=false"
                 }
                 sh 'rm train-schedule-kube-canary-temp.yml'
